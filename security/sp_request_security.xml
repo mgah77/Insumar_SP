@@ -1,0 +1,6 @@
+<!-- sp_request/security/sp_request_security.xml -->
+<odoo>
+    <data noupdate="1">
+        <!-- La filtración se maneja sobrescribiendo el método search() en el modelo sp.request -->
+    </data>
+</odoo>

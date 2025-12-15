@@ -1,0 +1,115 @@
+<!-- views/sp_request_views.xml -->
+<odoo>
+    <data>
+        <!-- Vista de Árbol (Lista) -->
+        <record id="view_sp_request_tree" model="ir.ui.view">
+            <field name="name">sp.request.tree</field>
+            <field name="model">sp.request</field>
+            <field name="arch" type="xml">
+                <tree string="Solicitudes de Pedido" decoration-info="state=='draft'" decoration-warning="state=='review'" decoration-success="state=='done'">
+                    <field name="name"/>
+                    <field name="date"/>
+                    <field name="user_id"/>
+                    <field name="warehouse_id"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista de Formulario -->
+        <record id="view_sp_request_form" model="ir.ui.view">
+            <field name="name">sp.request.form</field>
+            <field name="model">sp.request</field>
+            <field name="arch" type="xml">
+                <form string="Solicitud de Pedido">
+                    <header>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,review,validated,done"/>
+                        <button name="action_send_review" string="Enviar a Revisión" type="object" class="btn-primary"
+                                attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('is_branch_user', '=', False)]}"/>
+                        <button name="action_validate" string="Validar" type="object" class="btn-primary"
+                                attrs="{'invisible': ['|', ('state', '!=', 'review'), ('is_branch_user', '=', True)]}"/>
+                        <button name="action_recalculate_stock" string="Actualizar Stock" type="object" class="btn-secondary"
+                                attrs="{'invisible': [('state', '!=', 'validated')]}"/>
+                        <button name="action_mark_done" string="Marcar como Entregado" type="object" class="btn-primary"
+                                attrs="{'invisible': ['|', ('state', '!=', 'validated'), ('is_branch_user', '=', True)]}"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="date"/>
+                                <field name="user_id"/>
+                            </group>
+                            <group>
+                                <field name="warehouse_id" attrs="{'readonly': [('is_branch_user', '=', True)]}"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Productos Solicitados">
+                                <field name="line_ids">
+                                    <tree string="Líneas de Producto" editable="bottom" decoration-danger="stock_central == 0 and parent.state == 'review'">
+                                        <field name="product_id" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
+                                        <field name="qty_request" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
+                                        <field name="stock_branch" readonly="1"/>
+                                        <field name="stock_central" readonly="1" 
+                                               attrs="{'invisible': [('parent.is_branch_user', '=', True)]}"/>
+                                        <field name="avg_sales_3m" readonly="1"
+                                               attrs="{'invisible': [('parent.is_branch_user', '=', True)]}"/>
+                                        <field name="move_qty" 
+                                               attrs="{'readonly': ['|', ('parent.state', 'not in', ['review', 'validated']), ('parent.is_branch_user', '=', True)]}"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vista de Búsqueda -->
+        <record id="view_sp_request_search" model="ir.ui.view">
+            <field name="name">sp.request.search</field>
+            <field name="model">sp.request</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Solicitud de Pedido">
+                    <field name="name"/>
+                    <field name="user_id"/>
+                    <field name="warehouse_id"/>
+                    <field name="state"/>
+                    <filter string="Borrador" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="En Revisión" name="review" domain="[('state', '=', 'review')]"/>
+                    <filter string="Validado" name="validated" domain="[('state', '=', 'validated')]"/>
+                    <filter string="Entregado" name="done" domain="[('state', '=', 'done')]"/>
+                    <separator/>
+                    <filter string="Mis SPs" name="my_sp" domain="[('user_id', '=', uid)]"/>
+                    <group expand="0" string="Agrupar por">
+                        <filter string="Bodega" name="group_warehouse" context="{'group_by':'warehouse_id'}"/>
+                        <filter string="Estado" name="group_state" context="{'group_by':'state'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Acción de Ventana -->
+        <record id="action_sp_request" model="ir.actions.act_window">
+            <field name="name">Solicitudes de Pedido</field>
+            <field name="res_model">sp.request</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crea tu primera Solicitud de Pedido
+                </p>
+            </field>
+        </record>
+
+        <!-- Elemento de Menú -->
+        <menuitem id="menu_sp_request_root" name="Solicitudes de Pedido" parent="stock.menu_stock_root" sequence="10"/>
+        <menuitem id="menu_sp_request" name="Solicitudes" parent="menu_sp_request_root" action="action_sp_request" sequence="1"/>
+
+    </data>
+</odoo>
