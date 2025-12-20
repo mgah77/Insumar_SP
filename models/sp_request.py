@@ -117,15 +117,15 @@ class SpRequestLine(models.Model):
         for line in self:
             line.can_see_stock_central = not bool(self.env.user.property_warehouse_id)
 
-    @api.depends('stock_central', 'request_id.state', 'qty_request') # <-- DEPENDENCIA AÑADIDA
+    @api.depends('stock_central', 'request_id.state', 'qty_request')
     @api.depends_context('uid')
     def _compute_show_red_alert(self):
         is_sala_user = self.user_has_groups('parches_insumar.group_sala')
         for line in self:
             line.show_red_alert = (
                 not is_sala_user and
-                line.request_id.state == 'review' and
-                (line.stock_central == 0 or line.qty_request > line.stock_central) # <-- CONDICIÓN MODIFICADA
+                line.request_id.state in ('review', 'validated') and # <-- CONDICIÓN MODIFICADA
+                (line.stock_central == 0 or line.qty_request > line.stock_central)
             )
 
     @api.depends('product_id', 'request_id.warehouse_id')
