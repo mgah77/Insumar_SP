@@ -90,6 +90,8 @@
                             <field name="product_id"/>
                             <field name="qty_request" string="Solicitado"/>
                             <field name="move_qty" string="A Mover"/>
+                            <!-- CAMPO AÑADIDO -->
+                            <field name="has_difference" invisible="1"/>
                         </tree>
                     </field>
                     <footer>
