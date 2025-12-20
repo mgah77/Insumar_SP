@@ -42,7 +42,7 @@
                             </group>
                             <group>
                                 <!-- CAMPO MODIFICADO -->
-                                <field name="warehouse_id" attrs="{'readonly': ['|', ('is_branch_user', '=', True), ('state', '!=', 'draft')]}"/>
+                                <field name="warehouse_id" attrs="{'readonly': ['|', ('is_branch_user', '=', True), ('state', '!=', 'draft')]}" options="{'no_open': True}"/>
                             </group>
                         </group>
                         <notebook>
