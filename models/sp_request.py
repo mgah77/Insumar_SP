@@ -81,14 +81,17 @@ class SpRequest(models.Model):
             raise AccessError(_("Esta acción solo está disponible para usuarios centrales."))
         self.write({'state': 'validated'})
 
+    # --- MÉTODO MODIFICADO ---
     def action_mark_done(self):
         if self.env.user.property_warehouse_id:
             raise AccessError(_("Esta acción solo está disponible para usuarios centrales."))
         
-        lines_with_diff = self.line_ids.filtered(lambda l: l.move_qty != l.qty_request)
+        # Buscar líneas donde la cantidad a mover es MENOR que la solicitada
+        lines_with_diff = self.line_ids.filtered(lambda l: l.move_qty < l.qty_request)
         
         if lines_with_diff:
             view_id = self.env.ref('Insumar_SP.view_insumar_sp_transfer_wizard_form').id
+            
             return {
                 'name': _('Confirmar Creación de Transferencia'),
                 'type': 'ir.actions.act_window',
