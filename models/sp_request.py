@@ -162,6 +162,6 @@ class SpRequestLine(models.Model):
                 fields=['product_uom_qty'],
                 groupby=[]
             )
-            # LÍNEA CORREGIDA PARA MANEjar None
-            total_sales = sales_data[0].get('product_uom_qty', 0.0) if sales_data else 0.0
+            # LÍNEA CORREGIDA PARA MANEJAR None DE FORMA MÁS ROBUSTA
+            total_sales = sales_data[0].get('product_uom_qty') or 0.0 if sales_data else 0.0
             line.avg_sales_3m = total_sales / 3.0 if total_sales > 0 else 0.0
