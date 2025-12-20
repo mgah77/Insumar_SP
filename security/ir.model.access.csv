@@ -1,4 +1,3 @@
-# Insumar_SP/security/ir.model.access.csv
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_insumar_sp_user,insumar_sp.user,model_insumar_sp_request,base.group_user,1,1,1,1
 access_insumar_sp_line_user,insumar_sp.line.user,model_insumar_sp_line,base.group_user,1,1,1,1
