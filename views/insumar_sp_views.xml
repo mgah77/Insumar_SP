@@ -83,8 +83,8 @@
                         <strong>¡Atención!</strong> Las siguientes líneas tienen una cantidad a mover menor a la solicitada. Revise la tabla y confirme si desea continuar.
                     </div>
                     <field name="line_ids">
-                        <!-- SE AÑADE no_open="1" A LA ETIQUETA <tree> -->
-                        <tree string="Resumen de Productos" decoration-danger="has_difference" create="0" edit="0" no_open="1">
+                        <!-- SE AÑADE delete="0" -->
+                        <tree string="Resumen de Productos" decoration-danger="has_difference" create="0" edit="0" delete="0" no_open="1">
                             <field name="product_id" readonly="1"/>
                             <field name="qty_request" string="Solicitado" readonly="1"/>
                             <field name="move_qty" string="A Mover" readonly="1"/>
