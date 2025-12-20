@@ -1,6 +1,6 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, AccessError
-from dateutil.relativedelta import relativedelta  # <-- LÍNEA AÑADIDA
+from dateutil.relativedelta import relativedelta
 
 class SpRequest(models.Model):
     _name = 'insumar_sp.request'
@@ -100,6 +100,14 @@ class SpRequestLine(models.Model):
     move_qty = fields.Float(string='Cant. a Mover', digits='Product Unit of Measure')
 
     show_red_alert = fields.Boolean(compute='_compute_show_red_alert', store=False)
+    # --- CAMPO AÑADIDO ---
+    can_see_stock_central = fields.Boolean(compute='_compute_can_see_stock_central', store=False)
+
+    @api.depends_context('uid')
+    def _compute_can_see_stock_central(self):
+        # Se puede ver el stock central si el usuario NO tiene bodega asignada (usuario central)
+        for line in self:
+            line.can_see_stock_central = not bool(self.env.user.property_warehouse_id)
 
     @api.depends('stock_central', 'request_id.state')
     @api.depends_context('uid')
@@ -141,7 +149,7 @@ class SpRequestLine(models.Model):
                 domain=[
                     ('product_id', '=', line.product_id.id), 
                     ('date', '>=', from_date),
-                    ('warehouse_id', '=', line.request_id.warehouse_id.id) # <-- LÍNEA AÑADIDA
+                    ('warehouse_id', '=', line.request_id.warehouse_id.id)
                 ],
                 fields=['product_uom_qty'],
                 groupby=[]

@@ -51,12 +51,13 @@
                                         <field name="qty_request" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                         <field name="stock_branch" readonly="1"/>
                                         <field name="stock_central" readonly="1" 
-                                               attrs="{'invisible': [('parent.is_branch_user', '=', True)]}"/>
+                                               attrs="{'invisible': [('can_see_stock_central', '=', False)]}"/>
                                         <field name="avg_sales_3m" readonly="1"
-                                               attrs="{'invisible': [('parent.is_branch_user', '=', True)]}"/>
+                                               attrs="{'invisible': [('can_see_stock_central', '=', False)]}"/>
                                         <field name="move_qty" 
-                                               attrs="{'readonly': ['|', ('parent.state', 'not in', ['review', 'validated']), ('parent.is_branch_user', '=', True)]}"/>
+                                               attrs="{'readonly': ['|', ('parent.state', 'not in', ['review', 'validated']), ('can_see_stock_central', '=', False)]}"/>
                                         <field name="show_red_alert" invisible="1"/>
+                                        <field name="can_see_stock_central" invisible="1"/>
                                     </tree>
                                 </field>
                             </page>
