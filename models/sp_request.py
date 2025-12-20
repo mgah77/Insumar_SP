@@ -58,11 +58,17 @@ class SpRequest(models.Model):
                     raise UserError(_("Solo puedes editar una Solicitud de Pedido en estado Borrador."))
         return super().write(vals)
 
+    # --- MÉTODO MODIFICADO ---
     def unlink(self):
-        if self.env.user.property_warehouse_id:
-            for record in self:
-                if record.state != 'draft':
-                    raise UserError(_("Solo puedes eliminar una Solicitud de Pedido en estado Borrador."))
+        for record in self:
+            # Regla universal: no se puede eliminar si está entregado
+            if record.state == 'done':
+                raise UserError(_("No se puede eliminar una Solicitud de Pedido en estado 'Entregado'."))
+            
+            # Regla específica para usuarios de sucursal: solo pueden eliminar en borrador
+            if self.env.user.property_warehouse_id and record.state != 'draft':
+                raise UserError(_("Solo puedes eliminar una Solicitud de Pedido en estado Borrador."))
+                
         return super().unlink()
 
     @api.model
@@ -190,6 +196,13 @@ class SpRequestLine(models.Model):
             )
             total_sales = sales_data[0].get('product_uom_qty') or 0.0 if sales_data else 0.0
             line.avg_sales_3m = total_sales / 3.0 if total_sales > 0 else 0.0
+
+    # --- MÉTODO AÑADIDO ---
+    def unlink(self):
+        for line in self:
+            if line.request_id.state == 'done':
+                raise UserError(_("No se pueden eliminar líneas de una Solicitud de Pedido en estado 'Entregado'."))
+        return super().unlink()
 
 
 class SpTransferWizard(models.TransientModel):
