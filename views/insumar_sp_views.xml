@@ -39,7 +39,7 @@
                                 <field name="name"/>
                                 <field name="date"/>
                                 <!-- CAMPO MODIFICADO -->
-                                <field name="user_id" options="{'no_create': True, 'no_create_edit': True}"/>
+                                <field name="user_id" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
                             </group>
                             <group>
                                 <field name="warehouse_id" attrs="{'readonly': [('is_branch_user', '=', True)]}"/>
@@ -50,14 +50,13 @@
                                 <field name="line_ids">
                                     <tree string="Líneas de Producto" editable="bottom" decoration-danger="show_red_alert">
                                         <!-- CAMPO MODIFICADO -->
-                                        <field name="product_id" attrs="{'readonly': [('parent.state', '!=', 'draft')]}" domain="[('sale_ok', '=', True)]" options="{'no_create': True, 'no_create_edit': True}"/>
+                                        <field name="product_id" attrs="{'readonly': [('parent.state', '!=', 'draft')]}" domain="[('sale_ok', '=', True)]" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
                                         <field name="qty_request" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                         <field name="stock_branch" readonly="1"/>
                                         <field name="stock_central" readonly="1" 
                                                attrs="{'invisible': [('can_see_stock_central', '=', False)]}"/>
                                         <field name="avg_sales_3m" readonly="1"
                                                attrs="{'invisible': [('can_see_stock_central', '=', False)]}"/>
-                                        <!-- CAMPO MODIFICADO -->
                                         <field name="move_qty" 
                                                attrs="{'readonly': ['|', ('parent.state', '!=', 'validated'), ('parent.is_branch_user', '=', True)]}"/>
                                         <field name="show_red_alert" invisible="1"/>
