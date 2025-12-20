@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, AccessError
+from dateutil.relativedelta import relativedelta  # <-- LÍNEA AÑADIDA
 
 class SpRequest(models.Model):
     _name = 'insumar_sp.request'
@@ -135,7 +136,7 @@ class SpRequestLine(models.Model):
                 line.avg_sales_3m = 0
                 continue
             
-            from_date = fields.Datetime.now() - fields.RelativeDelta(days=90)
+            from_date = fields.Datetime.now() - relativedelta(days=90) # <-- LÍNEA CORREGIDA
             sales_data = self.env['sale.report'].read_group(
                 domain=[('product_id', '=', line.product_id.id), ('date', '>=', from_date)],
                 fields=['product_uom_qty'],
