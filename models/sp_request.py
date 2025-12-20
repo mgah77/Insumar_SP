@@ -81,17 +81,14 @@ class SpRequest(models.Model):
             raise AccessError(_("Esta acción solo está disponible para usuarios centrales."))
         self.write({'state': 'validated'})
 
-    # --- MÉTODO MODIFICADO ---
     def action_mark_done(self):
         if self.env.user.property_warehouse_id:
             raise AccessError(_("Esta acción solo está disponible para usuarios centrales."))
         
-        # Buscar líneas donde la cantidad a mover es MENOR que la solicitada
         lines_with_diff = self.line_ids.filtered(lambda l: l.move_qty < l.qty_request)
         
         if lines_with_diff:
             view_id = self.env.ref('Insumar_SP.view_insumar_sp_transfer_wizard_form').id
-            
             return {
                 'name': _('Confirmar Creación de Transferencia'),
                 'type': 'ir.actions.act_window',
@@ -101,19 +98,11 @@ class SpRequest(models.Model):
                 'target': 'new',
                 'context': {
                     'default_request_id': self.id,
-                    'default_difference_warning': self._get_difference_warning(lines_with_diff),
                 }
             }
         else:
             self.write({'state': 'done'})
             self.message_post(body=_("Transferencia confirmada y marcada como entregada."))
-
-    def _get_difference_warning(self, lines):
-        warning = _("Hay diferencias entre lo solicitado y la cantidad a mover. Revise los detalles:\n\n")
-        for line in lines:
-            warning += _("- Producto: %s | Solicitado: %s | A mover: %s\n") % (line.product_id.name, line.qty_request, line.move_qty)
-        warning += _("\n\n¿Desea continuar de todas formas?")
-        return warning
 
     def action_recalculate_stock(self):
         self.ensure_one()
@@ -195,14 +184,46 @@ class SpRequestLine(models.Model):
             line.avg_sales_3m = total_sales / 3.0 if total_sales > 0 else 0.0
 
 
+# --- MODELOS DEL ASISTENTE (WIZARD) MODIFICADOS ---
 class SpTransferWizard(models.TransientModel):
     _name = 'insumar_sp.transfer.wizard'
     _description = 'Asistente para Confirmar Transferencia'
 
     request_id = fields.Many2one('insumar_sp.request', string='Solicitud de Pedido', required=True)
-    difference_warning = fields.Text(string='Advertencia', readonly=True)
+    line_ids = fields.One2many('insumar_sp.transfer.wizard.line', 'wizard_id', string='Líneas de Producto')
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        if 'request_id' in res and res['request_id']:
+            request = self.env['insumar_sp.request'].browse(res['request_id'])
+            wizard_lines = []
+            for line in request.line_ids:
+                wizard_lines.append((0, 0, {
+                    'product_id': line.product_id.id,
+                    'qty_request': line.qty_request,
+                    'move_qty': line.move_qty,
+                }))
+            res['line_ids'] = wizard_lines
+        return res
 
     def action_confirm_transfer(self):
         self.request_id.write({'state': 'done'})
-        self.request_id.message_post(body=_("Transferencia confirmada y marcada como entregada (con diferencias)."))
+        self.request_id.message_post(body=_("Transferencia confirmada y marcada como entregada."))
         return {'type': 'ir.actions.act_window_close'}
+
+
+class SpTransferWizardLine(models.TransientModel):
+    _name = 'insumar_sp.transfer.wizard.line'
+    _description = 'Líneas del Asistente de Transferencia'
+
+    wizard_id = fields.Many2one('insumar_sp.transfer.wizard', required=True, ondelete='cascade')
+    product_id = fields.Many2one('product.product', string='Producto', required=True, readonly=True)
+    qty_request = fields.Float(string='Cant. Solicitada', digits='Product Unit of Measure', readonly=True)
+    move_qty = fields.Float(string='Cant. a Mover', digits='Product Unit of Measure', readonly=True)
+    has_difference = fields.Boolean(compute='_compute_has_difference', store=True)
+
+    @api.depends('move_qty', 'qty_request')
+    def _compute_has_difference(self):
+        for line in self:
+            line.has_difference = line.move_qty < line.qty_request

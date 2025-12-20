@@ -79,13 +79,19 @@
             <field name="model">insumar_sp.transfer.wizard</field>
             <field name="arch" type="xml">
                 <form string="Confirmar Transferencia">
-                    <sheet>
-                        <field name="request_id" invisible="1"/>
-                        <!-- El campo de advertencia se mueve fuera del group para que ocupe todo el ancho -->
-                        <div>
-                            <field name="difference_warning" nolabel="1" widget="text"/>
+                    <field name="request_id" invisible="1"/>
+                    <group>
+                        <div class="alert alert-warning" role="alert">
+                            <strong>¡Atención!</strong> Las siguientes líneas tienen una cantidad a mover menor a la solicitada. Revise la tabla y confirme si desea continuar.
                         </div>
-                    </sheet>
+                    </group>
+                    <field name="line_ids">
+                        <tree string="Resumen de Productos" decoration-danger="has_difference">
+                            <field name="product_id"/>
+                            <field name="qty_request" string="Solicitado"/>
+                            <field name="move_qty" string="A Mover"/>
+                        </tree>
+                    </field>
                     <footer>
                         <button name="action_confirm_transfer" string="Confirmar y Crear" type="object" class="btn-primary"/>
                         <button string="Cancelar" class="btn-secondary" special="cancel"/>
