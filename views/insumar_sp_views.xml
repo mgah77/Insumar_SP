@@ -80,17 +80,15 @@
             <field name="arch" type="xml">
                 <form string="Confirmar Transferencia">
                     <field name="request_id" invisible="1"/>
-                    <group>
-                        <div class="alert alert-warning" role="alert">
-                            <strong>¡Atención!</strong> Las siguientes líneas tienen una cantidad a mover menor a la solicitada. Revise la tabla y confirme si desea continuar.
-                        </div>
-                    </group>
+                    <!-- El mensaje se mueve fuera del grupo para una mejor visualización -->
+                    <div class="alert alert-warning" role="alert" style="margin-bottom: 16px;">
+                        <strong>¡Atención!</strong> Las siguientes líneas tienen una cantidad a mover menor a la solicitada. Revise la tabla y confirme si desea continuar.
+                    </div>
                     <field name="line_ids">
                         <tree string="Resumen de Productos" decoration-danger="has_difference">
                             <field name="product_id"/>
                             <field name="qty_request" string="Solicitado"/>
                             <field name="move_qty" string="A Mover"/>
-                            <!-- CAMPO AÑADIDO -->
                             <field name="has_difference" invisible="1"/>
                         </tree>
                     </field>

@@ -184,7 +184,6 @@ class SpRequestLine(models.Model):
             line.avg_sales_3m = total_sales / 3.0 if total_sales > 0 else 0.0
 
 
-# --- MODELOS DEL ASISTENTE (WIZARD) MODIFICADOS ---
 class SpTransferWizard(models.TransientModel):
     _name = 'insumar_sp.transfer.wizard'
     _description = 'Asistente para Confirmar Transferencia'
@@ -192,13 +191,15 @@ class SpTransferWizard(models.TransientModel):
     request_id = fields.Many2one('insumar_sp.request', string='Solicitud de Pedido', required=True)
     line_ids = fields.One2many('insumar_sp.transfer.wizard.line', 'wizard_id', string='Líneas de Producto')
 
+    # --- MÉTODO MODIFICADO ---
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
         if 'request_id' in res and res['request_id']:
             request = self.env['insumar_sp.request'].browse(res['request_id'])
             wizard_lines = []
-            for line in request.line_ids:
+            # Filtrar las líneas para solo incluir las que tienen diferencias
+            for line in request.line_ids.filtered(lambda l: l.move_qty < l.qty_request):
                 wizard_lines.append((0, 0, {
                     'product_id': line.product_id.id,
                     'qty_request': line.qty_request,
