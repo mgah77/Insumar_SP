@@ -73,16 +73,18 @@
             </field>
         </record>
 
+        <!-- VISTA DEL ASISTENTE MODIFICADA -->
         <record id="view_insumar_sp_transfer_wizard_form" model="ir.ui.view">
             <field name="name">insumar_sp.transfer.wizard.form</field>
             <field name="model">insumar_sp.transfer.wizard</field>
             <field name="arch" type="xml">
                 <form string="Confirmar Transferencia">
                     <sheet>
-                        <group>
-                            <field name="request_id" invisible="1"/>
-                            <field name="difference_warning" nolabel="1"/>
-                        </group>
+                        <field name="request_id" invisible="1"/>
+                        <!-- El campo de advertencia se mueve fuera del group para que ocupe todo el ancho -->
+                        <div>
+                            <field name="difference_warning" nolabel="1" widget="text"/>
+                        </div>
                     </sheet>
                     <footer>
                         <button name="action_confirm_transfer" string="Confirmar y Crear" type="object" class="btn-primary"/>
