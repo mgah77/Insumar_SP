@@ -32,12 +32,14 @@
                                 attrs="{'invisible': ['|', ('state', '!=', 'validated'), ('is_branch_user', '=', True)]}"/>
                     </header>
                     <sheet>
+                        <!-- CAMPO MOVIDO AQUÍ PARA ASEGURAR SU CÁLCULO TEMPRANO -->
+                        <field name="is_branch_user" invisible="1"/>
+                        
                         <group>
                             <group>
                                 <field name="name"/>
                                 <field name="date"/>
                                 <field name="user_id"/>
-                                <field name="is_branch_user" invisible="1"/>
                             </group>
                             <group>
                                 <field name="warehouse_id" attrs="{'readonly': [('is_branch_user', '=', True)]}"/>
