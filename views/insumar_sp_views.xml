@@ -28,7 +28,6 @@
                                 attrs="{'invisible': ['|', ('state', '!=', 'review'), ('is_branch_user', '=', True)]}"/>
                         <button name="action_recalculate_stock" string="Actualizar Stock" type="object" class="btn-secondary"
                                 attrs="{'invisible': [('state', '!=', 'validated')]}"/>
-                        <!-- CAMPO MODIFICADO -->
                         <button name="action_mark_done" string="Crear transferencia" type="object" class="btn-primary"
                                 attrs="{'invisible': ['|', ('state', '!=', 'validated'), ('is_branch_user', '=', True)]}"/>
                     </header>
@@ -74,7 +73,6 @@
             </field>
         </record>
 
-        <!-- VISTA DEL ASISTENTE (WIZARD) AÑADIDA -->
         <record id="view_insumar_sp_transfer_wizard_form" model="ir.ui.view">
             <field name="name">insumar_sp.transfer.wizard.form</field>
             <field name="model">insumar_sp.transfer.wizard</field>
@@ -83,7 +81,7 @@
                     <sheet>
                         <group>
                             <field name="request_id" invisible="1"/>
-                            <field name="difference_warning" nolabel="1" widget="text"/>
+                            <field name="difference_warning" nolabel="1"/>
                         </group>
                     </sheet>
                     <footer>

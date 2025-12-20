@@ -81,18 +81,14 @@ class SpRequest(models.Model):
             raise AccessError(_("Esta acción solo está disponible para usuarios centrales."))
         self.write({'state': 'validated'})
 
-    # --- MÉTODO MODIFICADO ---
     def action_mark_done(self):
         if self.env.user.property_warehouse_id:
             raise AccessError(_("Esta acción solo está disponible para usuarios centrales."))
         
-        # Buscar líneas con diferencias
         lines_with_diff = self.line_ids.filtered(lambda l: l.move_qty != l.qty_request)
         
         if lines_with_diff:
-            # Si hay diferencias, abrir el asistente de confirmación
             view_id = self.env.ref('Insumar_SP.view_insumar_sp_transfer_wizard_form').id
-            
             return {
                 'name': _('Confirmar Creación de Transferencia'),
                 'type': 'ir.actions.act_window',
@@ -106,12 +102,10 @@ class SpRequest(models.Model):
                 }
             }
         else:
-            # Si no hay diferencias, marcar como entregado directamente
             self.write({'state': 'done'})
             self.message_post(body=_("Transferencia confirmada y marcada como entregada."))
 
     def _get_difference_warning(self, lines):
-        """Construye el mensaje de advertencia para el asistente."""
         warning = _("Hay diferencias entre lo solicitado y la cantidad a mover. Revise los detalles:\n\n")
         for line in lines:
             warning += _("- Producto: %s | Solicitado: %s | A mover: %s\n") % (line.product_id.name, line.qty_request, line.move_qty)
@@ -198,7 +192,6 @@ class SpRequestLine(models.Model):
             line.avg_sales_3m = total_sales / 3.0 if total_sales > 0 else 0.0
 
 
-# --- MODELO ASISTENTE (WIZARD) AÑADIDO ---
 class SpTransferWizard(models.TransientModel):
     _name = 'insumar_sp.transfer.wizard'
     _description = 'Asistente para Confirmar Transferencia'
@@ -207,7 +200,6 @@ class SpTransferWizard(models.TransientModel):
     difference_warning = fields.Text(string='Advertencia', readonly=True)
 
     def action_confirm_transfer(self):
-        """Acción del botón en el asistente para confirmar y marcar como entregado."""
         self.request_id.write({'state': 'done'})
         self.request_id.message_post(body=_("Transferencia confirmada y marcada como entregada (con diferencias)."))
         return {'type': 'ir.actions.act_window_close'}
