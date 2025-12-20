@@ -191,14 +191,15 @@ class SpTransferWizard(models.TransientModel):
     request_id = fields.Many2one('insumar_sp.request', string='Solicitud de Pedido', required=True)
     line_ids = fields.One2many('insumar_sp.transfer.wizard.line', 'wizard_id', string='Líneas de Producto')
 
-    # --- MÉTODO MODIFICADO ---
+    # --- MÉTODO CORREGIDO ---
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
-        if 'request_id' in res and res['request_id']:
-            request = self.env['insumar_sp.request'].browse(res['request_id'])
+        # El request_id se obtiene del contexto, no de 'res'
+        request_id = self.env.context.get('default_request_id')
+        if request_id:
+            request = self.env['insumar_sp.request'].browse(request_id)
             wizard_lines = []
-            # Filtrar las líneas para solo incluir las que tienen diferencias
             for line in request.line_ids.filtered(lambda l: l.move_qty < l.qty_request):
                 wizard_lines.append((0, 0, {
                     'product_id': line.product_id.id,
@@ -212,7 +213,6 @@ class SpTransferWizard(models.TransientModel):
         self.request_id.write({'state': 'done'})
         self.request_id.message_post(body=_("Transferencia confirmada y marcada como entregada."))
         return {'type': 'ir.actions.act_window_close'}
-
 
 class SpTransferWizardLine(models.TransientModel):
     _name = 'insumar_sp.transfer.wizard.line'
