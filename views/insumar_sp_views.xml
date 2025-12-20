@@ -37,6 +37,7 @@
                                 <field name="name"/>
                                 <field name="date"/>
                                 <field name="user_id"/>
+                                <field name="is_branch_user" invisible="1"/>
                             </group>
                             <group>
                                 <field name="warehouse_id" attrs="{'readonly': [('is_branch_user', '=', True)]}"/>
@@ -55,7 +56,6 @@
                                                attrs="{'invisible': [('parent.is_branch_user', '=', True)]}"/>
                                         <field name="move_qty" 
                                                attrs="{'readonly': ['|', ('parent.state', 'not in', ['review', 'validated']), ('parent.is_branch_user', '=', True)]}"/>
-                                        <!-- CAMPO AÑADIDO -->
                                         <field name="show_red_alert" invisible="1"/>
                                     </tree>
                                 </field>
