@@ -27,11 +27,24 @@ class SpRequest(models.Model):
         for record in self:
             record.is_branch_user = bool(self.env.user.property_warehouse_id)
 
+    # --- MÉTODO AÑADIDO ---
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        # Si el usuario tiene bodega asignada, la usa como valor por defecto al crear
+        if self.env.user.property_warehouse_id:
+            res['warehouse_id'] = self.env.user.property_warehouse_id.id
+        return res
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
+            # Validación de seguridad en el backend
             if self.env.user.property_warehouse_id:
                 vals['warehouse_id'] = self.env.user.property_warehouse_id.id
+            else:
+                if not vals.get('warehouse_id'):
+                    raise UserError(_("Debe seleccionar una bodega para crear una Solicitud de Pedido."))
             
             if 'name' not in vals or vals['name'] == _('Nuevo'):
                 warehouse = self.env['stock.warehouse'].browse(vals.get('warehouse_id'))
@@ -100,12 +113,10 @@ class SpRequestLine(models.Model):
     move_qty = fields.Float(string='Cant. a Mover', digits='Product Unit of Measure')
 
     show_red_alert = fields.Boolean(compute='_compute_show_red_alert', store=False)
-    # --- CAMPO AÑADIDO ---
     can_see_stock_central = fields.Boolean(compute='_compute_can_see_stock_central', store=False)
 
     @api.depends_context('uid')
     def _compute_can_see_stock_central(self):
-        # Se puede ver el stock central si el usuario NO tiene bodega asignada (usuario central)
         for line in self:
             line.can_see_stock_central = not bool(self.env.user.property_warehouse_id)
 
