@@ -73,20 +73,18 @@
             </field>
         </record>
 
-        <!-- VISTA DEL ASISTENTE MODIFICADA -->
         <record id="view_insumar_sp_transfer_wizard_form" model="ir.ui.view">
             <field name="name">insumar_sp.transfer.wizard.form</field>
             <field name="model">insumar_sp.transfer.wizard</field>
             <field name="arch" type="xml">
                 <form string="Confirmar Transferencia">
                     <field name="request_id" invisible="1"/>
-                    <!-- El mensaje se mueve fuera del grupo para una mejor visualización -->
                     <div class="alert alert-warning" role="alert" style="margin-bottom: 16px;">
                         <strong>¡Atención!</strong> Las siguientes líneas tienen una cantidad a mover menor a la solicitada. Revise la tabla y confirme si desea continuar.
                     </div>
                     <field name="line_ids">
-                        <tree string="Resumen de Productos" decoration-danger="has_difference">
-                            <field name="product_id"/>
+                        <tree string="Resumen de Productos" decoration-danger="has_difference" create="0" edit="0">
+                            <field name="product_id" options="{'no_open': True}"/>
                             <field name="qty_request" string="Solicitado"/>
                             <field name="move_qty" string="A Mover"/>
                             <field name="has_difference" invisible="1"/>
