@@ -27,11 +27,9 @@ class SpRequest(models.Model):
         for record in self:
             record.is_branch_user = bool(self.env.user.property_warehouse_id)
 
-    # --- MÉTODO AÑADIDO ---
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
-        # Si el usuario tiene bodega asignada, la usa como valor por defecto al crear
         if self.env.user.property_warehouse_id:
             res['warehouse_id'] = self.env.user.property_warehouse_id.id
         return res
@@ -39,7 +37,6 @@ class SpRequest(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            # Validación de seguridad en el backend
             if self.env.user.property_warehouse_id:
                 vals['warehouse_id'] = self.env.user.property_warehouse_id.id
             else:
@@ -165,5 +162,6 @@ class SpRequestLine(models.Model):
                 fields=['product_uom_qty'],
                 groupby=[]
             )
-            total_sales = sales_data[0]['product_uom_qty'] if sales_data else 0.0
+            # LÍNEA CORREGIDA PARA MANEjar None
+            total_sales = sales_data[0].get('product_uom_qty', 0.0) if sales_data else 0.0
             line.avg_sales_3m = total_sales / 3.0 if total_sales > 0 else 0.0
