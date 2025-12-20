@@ -136,9 +136,13 @@ class SpRequestLine(models.Model):
                 line.avg_sales_3m = 0
                 continue
             
-            from_date = fields.Datetime.now() - relativedelta(days=90) # <-- LÍNEA CORREGIDA
+            from_date = fields.Datetime.now() - relativedelta(days=90)
             sales_data = self.env['sale.report'].read_group(
-                domain=[('product_id', '=', line.product_id.id), ('date', '>=', from_date)],
+                domain=[
+                    ('product_id', '=', line.product_id.id), 
+                    ('date', '>=', from_date),
+                    ('warehouse_id', '=', line.request_id.warehouse_id.id) # <-- LÍNEA AÑADIDA
+                ],
                 fields=['product_uom_qty'],
                 groupby=[]
             )
