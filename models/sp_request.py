@@ -117,7 +117,7 @@ class SpRequestLine(models.Model):
         for line in self:
             line.can_see_stock_central = not bool(self.env.user.property_warehouse_id)
 
-    @api.depends('stock_central', 'request_id.state')
+    @api.depends('stock_central', 'request_id.state', 'qty_request') # <-- DEPENDENCIA AÑADIDA
     @api.depends_context('uid')
     def _compute_show_red_alert(self):
         is_sala_user = self.user_has_groups('parches_insumar.group_sala')
@@ -125,7 +125,7 @@ class SpRequestLine(models.Model):
             line.show_red_alert = (
                 not is_sala_user and
                 line.request_id.state == 'review' and
-                line.stock_central == 0
+                (line.stock_central == 0 or line.qty_request > line.stock_central) # <-- CONDICIÓN MODIFICADA
             )
 
     @api.depends('product_id', 'request_id.warehouse_id')
@@ -162,6 +162,5 @@ class SpRequestLine(models.Model):
                 fields=['product_uom_qty'],
                 groupby=[]
             )
-            # LÍNEA CORREGIDA PARA MANEJAR None DE FORMA MÁS ROBUSTA
             total_sales = sales_data[0].get('product_uom_qty') or 0.0 if sales_data else 0.0
             line.avg_sales_3m = total_sales / 3.0 if total_sales > 0 else 0.0
