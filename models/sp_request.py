@@ -81,7 +81,6 @@ class SpRequest(models.Model):
             raise AccessError(_("Esta acción solo está disponible para usuarios centrales."))
         self.write({'state': 'validated'})
 
-    # --- MÉTODO MODIFICADO ---
     def action_mark_done(self):
         if self.env.user.property_warehouse_id:
             raise AccessError(_("Esta acción solo está disponible para usuarios centrales."))
@@ -89,10 +88,11 @@ class SpRequest(models.Model):
         lines_with_diff = self.line_ids.filtered(lambda l: l.move_qty < l.qty_request)
         
         if lines_with_diff:
-            # Preparar los datos de las líneas para pasarlos en el contexto
-            wizard_line_data = []
+            wizard = self.env['insumar_sp.transfer.wizard'].create({'request_id': self.id})
+            
             for line in lines_with_diff:
-                wizard_line_data.append({
+                self.env['insumar_sp.transfer.wizard.line'].create({
+                    'wizard_id': wizard.id,
                     'product_id': line.product_id.id,
                     'qty_request': line.qty_request,
                     'move_qty': line.move_qty,
@@ -104,13 +104,9 @@ class SpRequest(models.Model):
                 'type': 'ir.actions.act_window',
                 'view_mode': 'form',
                 'res_model': 'insumar_sp.transfer.wizard',
+                'res_id': wizard.id,
                 'view_id': view_id,
                 'target': 'new',
-                'context': {
-                    'default_request_id': self.id,
-                    # Pasar los datos preparados en el contexto
-                    'default_line_data': wizard_line_data,
-                }
             }
         else:
             self.write({'state': 'done'})
@@ -196,24 +192,12 @@ class SpRequestLine(models.Model):
             line.avg_sales_3m = total_sales / 3.0 if total_sales > 0 else 0.0
 
 
-# --- MODELOS DEL ASISTENTE (WIZARD) MODIFICADOS ---
 class SpTransferWizard(models.TransientModel):
     _name = 'insumar_sp.transfer.wizard'
     _description = 'Asistente para Confirmar Transferencia'
 
     request_id = fields.Many2one('insumar_sp.request', string='Solicitud de Pedido', required=True)
     line_ids = fields.One2many('insumar_sp.transfer.wizard.line', 'wizard_id', string='Líneas de Producto')
-
-    # --- MÉTODO AÑADIDO ---
-    @api.model
-    def create(self, vals):
-        # Obtener los datos de las líneas del contexto
-        line_data = self.env.context.get('default_line_data')
-        if line_data and 'line_ids' not in vals:
-            # Construir los comandos para el One2many
-            commands = [(0, 0, data) for data in line_data]
-            vals['line_ids'] = commands
-        return super().create(vals)
 
     def action_confirm_transfer(self):
         self.request_id.write({'state': 'done'})
