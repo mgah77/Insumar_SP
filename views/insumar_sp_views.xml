@@ -56,7 +56,7 @@
                                         <field name="avg_sales_3m" readonly="1"
                                                attrs="{'invisible': [('can_see_stock_central', '=', False)]}"/>
                                         <field name="move_qty" 
-                                               attrs="{'readonly': ['|', ('parent.state', '!=', 'validated'), ('parent.is_branch_user', '=', True)]}"/>
+                                               attrs="{'readonly': ['|', ('parent.state', 'not in', ['review', 'validated']), ('parent.is_branch_user', '=', True)]}"/>
                                         <field name="show_red_alert" invisible="1"/>
                                         <field name="can_see_stock_central" invisible="1"/>
                                     </tree>
@@ -84,10 +84,11 @@
                     </div>
                     <field name="line_ids">
                         <tree string="Resumen de Productos" decoration-danger="has_difference" create="0" edit="0">
-                            <field name="product_id" options="{'no_open': True}"/>
-                            <field name="qty_request" string="Solicitado"/>
-                            <field name="move_qty" string="A Mover"/>
-                            <field name="has_difference" invisible="1"/>
+                            <!-- TODOS LOS CAMPOS SON readonly="1" -->
+                            <field name="product_id" readonly="1"/>
+                            <field name="qty_request" string="Solicitado" readonly="1"/>
+                            <field name="move_qty" string="A Mover" readonly="1"/>
+                            <field name="has_difference" invisible="1" readonly="1"/>
                         </tree>
                     </field>
                     <footer>
