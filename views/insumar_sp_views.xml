@@ -55,6 +55,8 @@
                                                attrs="{'invisible': [('parent.is_branch_user', '=', True)]}"/>
                                         <field name="move_qty" 
                                                attrs="{'readonly': ['|', ('parent.state', 'not in', ['review', 'validated']), ('parent.is_branch_user', '=', True)]}"/>
+                                        <!-- CAMPO AÑADIDO -->
+                                        <field name="show_red_alert" invisible="1"/>
                                     </tree>
                                 </field>
                             </page>
