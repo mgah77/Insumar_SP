@@ -38,7 +38,6 @@
                             <group>
                                 <field name="name"/>
                                 <field name="date"/>
-                                <!-- CAMPO MODIFICADO -->
                                 <field name="user_id" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
                             </group>
                             <group>
@@ -50,7 +49,7 @@
                                 <field name="line_ids">
                                     <tree string="Líneas de Producto" editable="bottom" decoration-danger="show_red_alert">
                                         <!-- CAMPO MODIFICADO -->
-                                        <field name="product_id" attrs="{'readonly': [('parent.state', '!=', 'draft')]}" domain="[('sale_ok', '=', True)]" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                                        <field name="product_id" attrs="{'readonly': [('parent.state', '!=', 'draft')]}" domain="[('sale_ok', '=', True), ('detailed_type', '=', 'product')]" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
                                         <field name="qty_request" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                         <field name="stock_branch" readonly="1"/>
                                         <field name="stock_central" readonly="1" 
