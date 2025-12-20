@@ -1,0 +1,12 @@
+<!-- Insumar_SP/data/insumar_sp_data.xml -->
+<odoo>
+    <data noupdate="1">
+        <record id="sequence_insumar_sp" model="ir.sequence">
+            <field name="name">Insumar SP Sequence</field>
+            <field name="code">insumar_sp.request</field>
+            <field name="prefix">SP/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

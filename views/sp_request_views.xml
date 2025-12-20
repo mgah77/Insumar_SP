@@ -1,10 +1,9 @@
-<!-- views/sp_request_views.xml -->
+<!-- Insumar_SP/views/insumar_sp_views.xml -->
 <odoo>
     <data>
-        <!-- Vista de Árbol (Lista) -->
-        <record id="view_sp_request_tree" model="ir.ui.view">
-            <field name="name">sp.request.tree</field>
-            <field name="model">sp.request</field>
+        <record id="view_insumar_sp_tree" model="ir.ui.view">
+            <field name="name">insumar_sp.tree</field>
+            <field name="model">insumar_sp.request</field>
             <field name="arch" type="xml">
                 <tree string="Solicitudes de Pedido" decoration-info="state=='draft'" decoration-warning="state=='review'" decoration-success="state=='done'">
                     <field name="name"/>
@@ -16,10 +15,9 @@
             </field>
         </record>
 
-        <!-- Vista de Formulario -->
-        <record id="view_sp_request_form" model="ir.ui.view">
-            <field name="name">sp.request.form</field>
-            <field name="model">sp.request</field>
+        <record id="view_insumar_sp_form" model="ir.ui.view">
+            <field name="name">insumar_sp.form</field>
+            <field name="model">insumar_sp.request</field>
             <field name="arch" type="xml">
                 <form string="Solicitud de Pedido">
                     <header>
@@ -47,7 +45,7 @@
                         <notebook>
                             <page string="Productos Solicitados">
                                 <field name="line_ids">
-                                    <tree string="Líneas de Producto" editable="bottom" decoration-danger="stock_central == 0 and parent.state == 'review'">
+                                    <tree string="Líneas de Producto" editable="bottom" decoration-danger="show_red_alert">
                                         <field name="product_id" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                         <field name="qty_request" attrs="{'readonly': [('parent.state', '!=', 'draft')]}"/>
                                         <field name="stock_branch" readonly="1"/>
@@ -71,10 +69,9 @@
             </field>
         </record>
 
-        <!-- Vista de Búsqueda -->
-        <record id="view_sp_request_search" model="ir.ui.view">
-            <field name="name">sp.request.search</field>
-            <field name="model">sp.request</field>
+        <record id="view_insumar_sp_search" model="ir.ui.view">
+            <field name="name">insumar_sp.search</field>
+            <field name="model">insumar_sp.request</field>
             <field name="arch" type="xml">
                 <search string="Buscar Solicitud de Pedido">
                     <field name="name"/>
@@ -95,10 +92,9 @@
             </field>
         </record>
 
-        <!-- Acción de Ventana -->
-        <record id="action_sp_request" model="ir.actions.act_window">
+        <record id="action_insumar_sp" model="ir.actions.act_window">
             <field name="name">Solicitudes de Pedido</field>
-            <field name="res_model">sp.request</field>
+            <field name="res_model">insumar_sp.request</field>
             <field name="view_mode">tree,form</field>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
@@ -107,9 +103,8 @@
             </field>
         </record>
 
-        <!-- Elemento de Menú -->
-        <menuitem id="menu_sp_request_root" name="Solicitudes de Pedido" parent="stock.menu_stock_root" sequence="10"/>
-        <menuitem id="menu_sp_request" name="Solicitudes" parent="menu_sp_request_root" action="action_sp_request" sequence="1"/>
+        <menuitem id="menu_insumar_sp_root" name="Solicitudes de Pedido" parent="stock.menu_stock_root" sequence="10"/>
+        <menuitem id="menu_insumar_sp" name="Solicitudes" parent="menu_insumar_sp_root" action="action_insumar_sp" sequence="1"/>
 
     </data>
 </odoo>
