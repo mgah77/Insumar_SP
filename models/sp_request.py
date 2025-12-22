@@ -58,14 +58,11 @@ class SpRequest(models.Model):
                     raise UserError(_("Solo puedes editar una Solicitud de Pedido en estado Borrador."))
         return super().write(vals)
 
-    # --- MÉTODO MODIFICADO ---
     def unlink(self):
         for record in self:
-            # Regla universal: no se puede eliminar si está entregado
             if record.state == 'done':
                 raise UserError(_("No se puede eliminar una Solicitud de Pedido en estado 'Entregado'."))
             
-            # Regla específica para usuarios de sucursal: solo pueden eliminar en borrador
             if self.env.user.property_warehouse_id and record.state != 'draft':
                 raise UserError(_("Solo puedes eliminar una Solicitud de Pedido en estado Borrador."))
                 
@@ -77,9 +74,8 @@ class SpRequest(models.Model):
             args = args + [('warehouse_id', '=', self.env.user.property_warehouse_id.id)]
         return super().search(args, offset, limit, order, count=count)
 
+    # --- MÉTODO MODIFICADO ---
     def action_send_review(self):
-        if not self.env.user.property_warehouse_id:
-            raise AccessError(_("Esta acción solo está disponible para usuarios de sucursal."))
         self.write({'state': 'review'})
 
     def action_validate(self):
@@ -197,7 +193,6 @@ class SpRequestLine(models.Model):
             total_sales = sales_data[0].get('product_uom_qty') or 0.0 if sales_data else 0.0
             line.avg_sales_3m = total_sales / 3.0 if total_sales > 0 else 0.0
 
-    # --- MÉTODO AÑADIDO ---
     def unlink(self):
         for line in self:
             if line.request_id.state == 'done':

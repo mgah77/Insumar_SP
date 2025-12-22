@@ -22,8 +22,9 @@
                 <form string="Solicitud de Pedido">
                     <header>
                         <field name="state" widget="statusbar" statusbar_visible="draft,review,validated,done"/>
+                        <!-- ATRIBUTO MODIFICADO -->
                         <button name="action_send_review" string="Enviar a Revisión" type="object" class="btn-primary"
-                                attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('is_branch_user', '=', False)]}"/>
+                                attrs="{'invisible': [('state', '!=', 'draft')]}"/>
                         <button name="action_validate" string="Validar" type="object" class="btn-primary"
                                 attrs="{'invisible': ['|', ('state', '!=', 'review'), ('is_branch_user', '=', True)]}"/>
                         <button name="action_recalculate_stock" string="Actualizar Stock" type="object" class="btn-secondary"
@@ -83,7 +84,6 @@
                         <strong>¡Atención!</strong> Las siguientes líneas tienen una cantidad a mover menor a la solicitada. Revise la tabla y confirme si desea continuar.
                     </div>
                     <field name="line_ids">
-                        <!-- SE AÑADE delete="0" -->
                         <tree string="Resumen de Productos" decoration-danger="has_difference" create="0" edit="0" delete="0" no_open="1">
                             <field name="product_id" readonly="1"/>
                             <field name="qty_request" string="Solicitado" readonly="1"/>
