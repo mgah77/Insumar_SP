@@ -14,8 +14,8 @@
     ],
     'assets': {
         'web.assets_backend': [
-            'static/src/xml/systray.xml',
-            'static/src/js/systray.js',
+            'Insumar_SP/static/src/xml/systray.xml',
+            'Insumar_SP/static/src/js/systray.js',
         ],
     },
     'installable': True,
