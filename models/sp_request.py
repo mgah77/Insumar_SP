@@ -141,7 +141,6 @@ class SpRequest(models.Model):
 class SpRequestLine(models.Model):
     _name = 'insumar_sp.line'
     _description = 'Línea de Solicitud de Pedido'
-    # --- _order MODIFICADO DE TUPLA A CADENA ---
     _order = 'show_red_alert, stock_central desc'
 
     request_id = fields.Many2one('insumar_sp.request', string='Solicitud de Pedido', required=True, ondelete='cascade')
@@ -217,6 +216,14 @@ class SpRequestLine(models.Model):
             if line.request_id.state == 'done':
                 raise UserError(_("No se pueden eliminar líneas de una Solicitud de Pedido en estado 'Entregado'."))
         return super().unlink()
+
+    # --- MÉTODO search SOBRESCRITO ---
+    @api.model
+    def search(self, args, offset=0, limit=None, order=None, count=False):
+        # Forzar el orden definido en el modelo
+        if order is None:
+            order = self._order
+        return super().search(args, offset, limit, limit, order=order, count=count)
 
 
 class SpTransferWizard(models.TransientModel):
