@@ -24,7 +24,7 @@
                         <field name="state" widget="statusbar" statusbar_visible="draft,review,validated,done"/>
                         <!-- ATRIBUTO MODIFICADO -->
                         <button name="action_send_review" string="Enviar a Revisión" type="object" class="btn-primary"
-                                attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                                attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('is_bodega_user', '=', True)]}"/>
                         <button name="action_validate" string="Validar" type="object" class="btn-primary"
                                 attrs="{'invisible': ['|', ('state', '!=', 'review'), ('is_branch_user', '=', True)]}"/>
                         <button name="action_recalculate_stock" string="Actualizar Stock" type="object" class="btn-secondary"
@@ -34,6 +34,7 @@
                     </header>
                     <sheet>
                         <field name="is_branch_user" invisible="1"/>
+                        <field name="is_bodega_user" invisible="1"/>
                         
                         <group>
                             <group>

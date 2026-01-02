@@ -21,11 +21,19 @@ class SpRequest(models.Model):
     ], string='Estado', default='draft', required=True, tracking=True)
 
     is_branch_user = fields.Boolean(compute='_compute_user_type', store=False)
+    # --- CAMPO AÑADIDO ---
+    is_bodega_user = fields.Boolean(compute='_compute_is_bodega_user', store=False)
 
     @api.depends_context('uid')
     def _compute_user_type(self):
         for record in self:
             record.is_branch_user = bool(self.env.user.property_warehouse_id)
+
+    # --- MÉTODO AÑADIDO ---
+    @api.depends_context('uid')
+    def _compute_is_bodega_user(self):
+        for record in self:
+            record.is_bodega_user = self.user_has_groups('parches_insumar.group_bodega')
 
     @api.model
     def default_get(self, fields_list):
@@ -172,7 +180,6 @@ class SpRequestLine(models.Model):
             else:
                 line.stock_central = 0
 
-    # --- MÉTODO MODIFICADO PARA MANEJAR EL ERROR DE ACCESO ---
     @api.depends('product_id')
     def _compute_avg_sales(self):
         for line in self:
@@ -194,8 +201,6 @@ class SpRequestLine(models.Model):
                 total_sales = sales_data[0].get('product_uom_qty') or 0.0 if sales_data else 0.0
                 line.avg_sales_3m = total_sales / 3.0 if total_sales > 0 else 0.0
             except AccessError:
-                # Si el usuario no tiene permiso para ver el informe de ventas,
-                # el campo se establece en 0 para no bloquear la carga del registro.
                 line.avg_sales_3m = 0.0
 
     def unlink(self):
