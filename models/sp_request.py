@@ -22,7 +22,6 @@ class SpRequest(models.Model):
 
     is_branch_user = fields.Boolean(compute='_compute_user_type', store=False)
     is_bodega_user = fields.Boolean(compute='_compute_is_bodega_user', store=False)
-    # --- CAMPO AÑADIDO ---
     can_see_transfer_button = fields.Boolean(compute='_compute_can_see_transfer_button', store=False)
 
     @api.depends_context('uid')
@@ -35,7 +34,6 @@ class SpRequest(models.Model):
         for record in self:
             record.is_bodega_user = self.user_has_groups('parches_insumar.group_bodega')
 
-    # --- MÉTODO AÑADIDO ---
     @api.depends('state', 'is_branch_user', 'is_bodega_user')
     def _compute_can_see_transfer_button(self):
         for record in self:
@@ -228,9 +226,68 @@ class SpTransferWizard(models.TransientModel):
     line_ids = fields.One2many('insumar_sp.transfer.wizard.line', 'wizard_id', string='Líneas de Producto')
 
     def action_confirm_transfer(self):
-        self.request_id.write({'state': 'done'})
-        self.request_id.message_post(body=_("Transferencia confirmada y marcada como entregada."))
-        return {'type': 'ir.actions.act_window_close'}
+        request = self.request_id
+        central_wh = self.env['stock.warehouse'].search([('code', '=', 'WH')], limit=1)
+        dest_wh = request.warehouse_id
+
+        if not central_wh:
+            raise UserError(_("No se encontró la bodega central (código: 'WH')."))
+
+        # Buscar el tipo de operación de transferencia interna por defecto para la bodega central
+        picking_type = self.env['stock.picking.type'].search([
+            ('code', '=', 'internal'),
+            ('default_location_src_id', '=', central_wh.lot_stock_id.id)
+        ], limit=1)
+
+        if not picking_type:
+            raise UserError(_("No se encontró un tipo de operación de transferencia interna para la bodega central."))
+
+        # Crear el registro de transferencia (stock.picking)
+        picking_vals = {
+            'picking_type_id': picking_type.id,
+            'location_id': central_wh.lot_stock_id.id,
+            'location_dest_id': dest_wh.lot_stock_id.id,
+            'origin': request.name,
+            'state': 'draft',
+            'scheduled_date': fields.Datetime.now(),
+        }
+        new_picking = self.env['stock.picking'].create(picking_vals)
+
+        # Crear las líneas de movimiento (stock.move)
+        move_vals_list = []
+        for line in self.line_ids:
+            move_vals_list.append((0, 0, {
+                'product_id': line.product_id.id,
+                'product_uom_qty': line.move_qty,
+                'product_uom': line.product_id.uom_id.id,
+                'location_id': central_wh.lot_stock_id.id,
+                'location_dest_id': dest_wh.lot_stock_id.id,
+                'name': request.name,
+                'origin': request.name,
+                'state': 'draft',
+                'picking_id': new_picking.id,
+            }))
+        
+        new_picking.move_ids = move_vals_list
+
+        # Actualizar la solicitud original y publicar un mensaje
+        request.write({'state': 'done'})
+        request.message_post(
+            body=_(
+                "Transferencia confirmada y marcada como entregada. "
+                "<a href=# data-oe-model='stock.picking' data-oe-id=%s>Ver Transferencia</a>"
+            ) % new_picking.id
+        )
+
+        # Devolver una acción para abrir la nueva transferencia
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Transferencia Creada'),
+            'res_model': 'stock.picking',
+            'res_id': new_picking.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
 
 
 class SpTransferWizardLine(models.TransientModel):
