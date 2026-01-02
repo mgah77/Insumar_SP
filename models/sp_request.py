@@ -74,7 +74,6 @@ class SpRequest(models.Model):
             args = args + [('warehouse_id', '=', self.env.user.property_warehouse_id.id)]
         return super().search(args, offset, limit, order, count=count)
 
-    # --- MÉTODO MODIFICADO ---
     def action_send_review(self):
         self.write({'state': 'review'})
 
@@ -173,6 +172,7 @@ class SpRequestLine(models.Model):
             else:
                 line.stock_central = 0
 
+    # --- MÉTODO MODIFICADO PARA MANEJAR EL ERROR DE ACCESO ---
     @api.depends('product_id')
     def _compute_avg_sales(self):
         for line in self:
@@ -180,18 +180,23 @@ class SpRequestLine(models.Model):
                 line.avg_sales_3m = 0
                 continue
             
-            from_date = fields.Datetime.now() - relativedelta(days=90)
-            sales_data = self.env['sale.report'].read_group(
-                domain=[
-                    ('product_id', '=', line.product_id.id), 
-                    ('date', '>=', from_date),
-                    ('warehouse_id', '=', line.request_id.warehouse_id.id)
-                ],
-                fields=['product_uom_qty'],
-                groupby=[]
-            )
-            total_sales = sales_data[0].get('product_uom_qty') or 0.0 if sales_data else 0.0
-            line.avg_sales_3m = total_sales / 3.0 if total_sales > 0 else 0.0
+            try:
+                from_date = fields.Datetime.now() - relativedelta(days=90)
+                sales_data = self.env['sale.report'].read_group(
+                    domain=[
+                        ('product_id', '=', line.product_id.id), 
+                        ('date', '>=', from_date),
+                        ('warehouse_id', '=', line.request_id.warehouse_id.id)
+                    ],
+                    fields=['product_uom_qty'],
+                    groupby=[]
+                )
+                total_sales = sales_data[0].get('product_uom_qty') or 0.0 if sales_data else 0.0
+                line.avg_sales_3m = total_sales / 3.0 if total_sales > 0 else 0.0
+            except AccessError:
+                # Si el usuario no tiene permiso para ver el informe de ventas,
+                # el campo se establece en 0 para no bloquear la carga del registro.
+                line.avg_sales_3m = 0.0
 
     def unlink(self):
         for line in self:
