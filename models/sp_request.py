@@ -105,6 +105,7 @@ class SpRequest(models.Model):
         lines_with_diff = self.line_ids.filtered(lambda l: l.move_qty < l.qty_request)
         
         if lines_with_diff:
+            # Si hay diferencias, abre el Wizard
             wizard = self.env['insumar_sp.transfer.wizard'].create({'request_id': self.id})
             
             for line in lines_with_diff:
@@ -126,9 +127,71 @@ class SpRequest(models.Model):
                 'target': 'new',
             }
         else:
-            self.write({'state': 'done'})
-            self.message_post(body=_("Transferencia confirmada y marcada como entregada."))
+            # --- NUEVA LÓGICA: Si no hay diferencias, ejecuta el proceso directamente ---
+            picking = self._create_transfer_process()
+            return {
+                'type': 'ir.actions.act_window',
+                'name': _('Transferencia Creada'),
+                'res_model': 'stock.picking',
+                'res_id': picking.id,
+                'view_mode': 'form',
+                'target': 'current',
+            }
 
+    # --- NUEVO MÉTODO PRIVADO PARA CREAR EL PICKING ---
+    def _create_transfer_process(self):
+        self.ensure_one()
+        central_wh = self.env['stock.warehouse'].search([('code', '=', 'WH')], limit=1)
+        dest_wh = self.warehouse_id
+
+        if not central_wh:
+            raise UserError(_("No se encontró la bodega central (código: 'WH')."))
+
+        picking_type = self.env['stock.picking.type'].search([
+            ('code', '=', 'internal'),
+            ('default_location_src_id', '=', central_wh.lot_stock_id.id)
+        ], limit=1)
+
+        if not picking_type:
+            raise UserError(_("No se encontró un tipo de operación de transferencia interna para la bodega central."))
+
+        picking_vals = {
+            'picking_type_id': picking_type.id,
+            'location_id': central_wh.lot_stock_id.id,
+            'location_dest_id': dest_wh.lot_stock_id.id,
+            'origin': self.name,
+            'partner_id': self.env.company.partner_id.id, # Partner de la compañía
+            'state': 'draft',
+            'scheduled_date': fields.Datetime.now(),
+        }
+        new_picking = self.env['stock.picking'].create(picking_vals)
+
+        move_vals_list = []
+        for line in self.line_ids:
+            if line.move_qty > 0:
+                move_vals_list.append((0, 0, {
+                    'name': self.name,
+                    'origin': self.name,
+                    'product_id': line.product_id.id,
+                    'product_uom_qty': line.move_qty,
+                    'product_uom': line.product_id.uom_id.id,
+                    'location_id': central_wh.lot_stock_id.id,
+                    'location_dest_id': dest_wh.lot_stock_id.id,
+                    'state': 'draft',
+                    'picking_id': new_picking.id,
+                }))
+        
+        new_picking.move_ids = move_vals_list
+        
+        self.write({'state': 'done'})
+        self.message_post(
+            body=_(
+                "Transferencia confirmada y marcada como entregada. "
+                "<a href=# data-oe-model='stock.picking' data-oe-id=%s>Ver Transferencia</a>"
+            ) % new_picking.id
+        )
+        return new_picking
+    
     def action_recalculate_stock(self):
         self.ensure_one()
         if self.state != 'validated':
@@ -226,63 +289,14 @@ class SpTransferWizard(models.TransientModel):
     line_ids = fields.One2many('insumar_sp.transfer.wizard.line', 'wizard_id', string='Líneas con Diferencia')
 
     def action_confirm_transfer(self):
-        request = self.request_id
-        central_wh = self.env['stock.warehouse'].search([('code', '=', 'WH')], limit=1)
-        dest_wh = request.warehouse_id
-
-        if not central_wh:
-            raise UserError(_("No se encontró la bodega central (código: 'WH')."))
-
-        picking_type = self.env['stock.picking.type'].search([
-            ('code', '=', 'internal'),
-            ('default_location_src_id', '=', central_wh.lot_stock_id.id)
-        ], limit=1)
-
-        if not picking_type:
-            raise UserError(_("No se encontró un tipo de operación de transferencia interna para la bodega central."))
-
-        picking_vals = {
-            'picking_type_id': picking_type.id,
-            'location_id': central_wh.lot_stock_id.id,
-            'location_dest_id': dest_wh.lot_stock_id.id,
-            'origin': request.name,
-            'state': 'draft',
-            'scheduled_date': fields.Datetime.now(),
-            'partner_id': self.env.company.partner_id.id,
-        }
-        new_picking = self.env['stock.picking'].create(picking_vals)
-
-        # --- LÓGICA CORREGIDA: Iterar sobre las líneas de la solicitud original ---
-        move_vals_list = []
-        for line in request.line_ids:
-            if line.move_qty > 0:
-                move_vals_list.append((0, 0, {
-                    'name': request.name,
-                    'origin': request.name,
-                    'product_id': line.product_id.id,
-                    'product_uom_qty': line.move_qty,
-                    'product_uom': line.product_id.uom_id.id,
-                    'location_id': central_wh.lot_stock_id.id,
-                    'location_dest_id': dest_wh.lot_stock_id.id,
-                    'state': 'draft',
-                    'picking_id': new_picking.id,
-                }))
+        # Llamamos al método del request que ahora contiene toda la lógica
+        picking = self.request_id._create_transfer_process()
         
-        new_picking.move_ids = move_vals_list
-        
-        request.write({'state': 'done'})
-        request.message_post(
-            body=_(
-                "Transferencia confirmada y marcada como entregada. "
-                "<a href=# data-oe-model='stock.picking' data-oe-id=%s>Ver Transferencia</a>"
-            ) % new_picking.id
-        )
-
         return {
             'type': 'ir.actions.act_window',
             'name': _('Transferencia Creada'),
             'res_model': 'stock.picking',
-            'res_id': new_picking.id,
+            'res_id': picking.id,
             'view_mode': 'form',
             'target': 'current',
         }
