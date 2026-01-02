@@ -21,19 +21,29 @@ class SpRequest(models.Model):
     ], string='Estado', default='draft', required=True, tracking=True)
 
     is_branch_user = fields.Boolean(compute='_compute_user_type', store=False)
-    # --- CAMPO AÑADIDO ---
     is_bodega_user = fields.Boolean(compute='_compute_is_bodega_user', store=False)
+    # --- CAMPO AÑADIDO ---
+    can_see_transfer_button = fields.Boolean(compute='_compute_can_see_transfer_button', store=False)
 
     @api.depends_context('uid')
     def _compute_user_type(self):
         for record in self:
             record.is_branch_user = bool(self.env.user.property_warehouse_id)
 
-    # --- MÉTODO AÑADIDO ---
     @api.depends_context('uid')
     def _compute_is_bodega_user(self):
         for record in self:
             record.is_bodega_user = self.user_has_groups('parches_insumar.group_bodega')
+
+    # --- MÉTODO AÑADIDO ---
+    @api.depends('state', 'is_branch_user', 'is_bodega_user')
+    def _compute_can_see_transfer_button(self):
+        for record in self:
+            record.can_see_transfer_button = (
+                record.state == 'validated' and
+                not record.is_branch_user and
+                not record.is_bodega_user
+            )
 
     @api.model
     def default_get(self, fields_list):

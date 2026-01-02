@@ -26,16 +26,16 @@
                                 attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('is_bodega_user', '=', True)]}"/>
                         <button name="action_validate" string="Validar" type="object" class="btn-primary"
                                 attrs="{'invisible': ['|', ('state', '!=', 'review'), ('is_branch_user', '=', True)]}"/>
-                        <!-- ATRIBUTO MODIFICADO -->
                         <button name="action_recalculate_stock" string="Actualizar Stock" type="object" class="btn-secondary"
                                 attrs="{'invisible': ['|', ('state', '!=', 'validated'), ('is_bodega_user', '=', True)]}"/>
                         <!-- ATRIBUTO MODIFICADO -->
                         <button name="action_mark_done" string="Crear transferencia" type="object" class="btn-primary"
-                                attrs="{'invisible': ['|', ('state', '!=', 'validated'), ('is_branch_user', '=', True), ('is_bodega_user', '=', True)]}"/>
+                                attrs="{'invisible': [('can_see_transfer_button', '=', False)]}"/>
                     </header>
                     <sheet>
                         <field name="is_branch_user" invisible="1"/>
                         <field name="is_bodega_user" invisible="1"/>
+                        <field name="can_see_transfer_button" invisible="1"/>
                         
                         <group>
                             <group>
