@@ -1,21 +1,19 @@
 odoo.define('insumar_sp.SystrayMenu', function (require) {
     "use strict";
 
-    const { Component, useState } = owl;
-    const { useService } = require("@web/core/utils/hooks"); // Importación correcta en Odoo 16
-    const { registry } = require("@web/core/registry");
+    const { Component } = owl;
+    const { useService } = owl.hooks;
+    const SystrayMenu = require('web.SystrayMenu');
+    const { registry } = require('@web/core/registry');
 
     class InsumarSpMenu extends Component {
         setup() {
-            this.rpc = useService("rpc");
-            this.actionService = useService("action");
-            
-            // Usamos useState para que la vista reaccione automáticamente al cambio
-            this.state = useState({ counter: 0 });
-            
+            this.rpc = useService('rpc');
+            this.actionService = useService('action');
+            this.state = { counter: 0 };
             this.updateCounter();
             
-            // Polling cada 60 segundos
+            // Consultar al servidor cada 60 segundos
             setInterval(() => {
                 this.updateCounter();
             }, 60000);
@@ -27,7 +25,7 @@ odoo.define('insumar_sp.SystrayMenu', function (require) {
                 method: 'get_systray_sp_count',
             });
             this.state.counter = count;
-            // No necesitamos llamar render() manualmente con useState
+            this.render(); // Re-renderizar para actualizar el número
         }
 
         _onClickSpRequests() {
@@ -42,11 +40,12 @@ odoo.define('insumar_sp.SystrayMenu', function (require) {
         }
     }
 
-    // Asignamos el template XML
+    // Definir el template y los eventos
     InsumarSpMenu.template = 'insumar_sp.SystrayMenu';
-    
-    // Registramos el widget en el menú del sistema (Systray) de Odoo 16
-    registry.category("systray").add("insumar_sp.SystrayMenu", InsumarSpMenu, { sequence: 1 });
+    InsumarSpMenu.props = {};
+
+    // Agregar al menú del sistema
+    SystrayMenu.Items.push(InsumarSpMenu);
 
     return InsumarSpMenu;
 });
