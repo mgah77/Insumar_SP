@@ -200,6 +200,22 @@ class SpRequest(models.Model):
         self.line_ids._compute_stock_info()
         self.message_post(body=_("Stock recalculado manualmente."))
 
+    def get_systray_sp_count(self):
+        """
+        Devuelve el conteo de Solicitudes para el menú del sistema.
+        Solo cuenta para usuarios centrales (no tienen bodega asignada).
+        """
+        # Verificar si el usuario es de sucursal. Si lo es, retorna 0.
+        if self.env.user.property_warehouse_id:
+            return 0
+        
+        # Definir los estados que generan alerta (Revisión y Validación)
+        domain = [
+            ('state', 'in', ['review', 'validated'])
+        ]
+        
+        return self.search_count(domain)
+
 
 class SpRequestLine(models.Model):
     _name = 'insumar_sp.line'

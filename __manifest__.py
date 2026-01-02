@@ -12,6 +12,12 @@
         'security/insumar_sp_security.xml',
         'views/insumar_sp_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'static/src/xml/systray.xml',
+            'static/src/js/systray.js',
+        ],
+    },
     'installable': True,
     'application': True,
     'license': 'LGPL-3',
