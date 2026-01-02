@@ -248,6 +248,7 @@ class SpTransferWizard(models.TransientModel):
             'origin': request.name,
             'state': 'draft',
             'scheduled_date': fields.Datetime.now(),
+            'partner_id': self.env.company.partner_id.id,
         }
         new_picking = self.env['stock.picking'].create(picking_vals)
 
@@ -285,7 +286,6 @@ class SpTransferWizard(models.TransientModel):
             'view_mode': 'form',
             'target': 'current',
         }
-
 
 class SpTransferWizardLine(models.TransientModel):
     _name = 'insumar_sp.transfer.wizard.line'
