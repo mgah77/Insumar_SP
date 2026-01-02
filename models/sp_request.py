@@ -141,7 +141,7 @@ class SpRequest(models.Model):
 class SpRequestLine(models.Model):
     _name = 'insumar_sp.line'
     _description = 'Línea de Solicitud de Pedido'
-    _order = 'stock_central desc, id'
+    _order = 'show_red_alert, id'
 
     request_id = fields.Many2one('insumar_sp.request', string='Solicitud de Pedido', required=True, ondelete='cascade')
     product_id = fields.Many2one('product.product', string='Producto', required=True)
