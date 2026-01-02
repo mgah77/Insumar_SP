@@ -141,7 +141,8 @@ class SpRequest(models.Model):
 class SpRequestLine(models.Model):
     _name = 'insumar_sp.line'
     _description = 'Línea de Solicitud de Pedido'
-    _order = 'stock_central desc, id'
+    # --- _order MODIFICADO ---
+    _order = ('show_red_alert', 'stock_central desc')
 
     request_id = fields.Many2one('insumar_sp.request', string='Solicitud de Pedido', required=True, ondelete='cascade')
     product_id = fields.Many2one('product.product', string='Producto', required=True)
@@ -216,7 +217,6 @@ class SpRequestLine(models.Model):
             if line.request_id.state == 'done':
                 raise UserError(_("No se pueden eliminar líneas de una Solicitud de Pedido en estado 'Entregado'."))
         return super().unlink()
-
 
 class SpTransferWizard(models.TransientModel):
     _name = 'insumar_sp.transfer.wizard'
