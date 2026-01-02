@@ -223,7 +223,7 @@ class SpTransferWizard(models.TransientModel):
     _description = 'Asistente para Confirmar Transferencia'
 
     request_id = fields.Many2one('insumar_sp.request', string='Solicitud de Pedido', required=True)
-    line_ids = fields.One2many('insumar_sp.transfer.wizard.line', 'wizard_id', string='Líneas de Producto')
+    line_ids = fields.One2many('insumar_sp.transfer.wizard.line', 'wizard_id', string='Líneas con Diferencia')
 
     def action_confirm_transfer(self):
         request = self.request_id
@@ -233,7 +233,6 @@ class SpTransferWizard(models.TransientModel):
         if not central_wh:
             raise UserError(_("No se encontró la bodega central (código: 'WH')."))
 
-        # Buscar el tipo de operación de transferencia interna por defecto para la bodega central
         picking_type = self.env['stock.picking.type'].search([
             ('code', '=', 'internal'),
             ('default_location_src_id', '=', central_wh.lot_stock_id.id)
@@ -242,7 +241,6 @@ class SpTransferWizard(models.TransientModel):
         if not picking_type:
             raise UserError(_("No se encontró un tipo de operación de transferencia interna para la bodega central."))
 
-        # Crear el registro de transferencia (stock.picking)
         picking_vals = {
             'picking_type_id': picking_type.id,
             'location_id': central_wh.lot_stock_id.id,
@@ -253,24 +251,24 @@ class SpTransferWizard(models.TransientModel):
         }
         new_picking = self.env['stock.picking'].create(picking_vals)
 
-        # Crear las líneas de movimiento (stock.move)
+        # --- LÓGICA CORREGIDA: Iterar sobre las líneas de la solicitud original ---
         move_vals_list = []
-        for line in self.line_ids:
-            move_vals_list.append((0, 0, {
-                'product_id': line.product_id.id,
-                'product_uom_qty': line.move_qty,
-                'product_uom': line.product_id.uom_id.id,
-                'location_id': central_wh.lot_stock_id.id,
-                'location_dest_id': dest_wh.lot_stock_id.id,
-                'name': request.name,
-                'origin': request.name,
-                'state': 'draft',
-                'picking_id': new_picking.id,
-            }))
+        for line in request.line_ids:
+            if line.move_qty > 0:
+                move_vals_list.append((0, 0, {
+                    'name': request.name,
+                    'origin': request.name,
+                    'product_id': line.product_id.id,
+                    'product_uom_qty': line.move_qty,
+                    'product_uom': line.product_id.uom_id.id,
+                    'location_id': central_wh.lot_stock_id.id,
+                    'location_dest_id': dest_wh.lot_stock_id.id,
+                    'state': 'draft',
+                    'picking_id': new_picking.id,
+                }))
         
         new_picking.move_ids = move_vals_list
-
-        # Actualizar la solicitud original y publicar un mensaje
+        
         request.write({'state': 'done'})
         request.message_post(
             body=_(
@@ -279,7 +277,6 @@ class SpTransferWizard(models.TransientModel):
             ) % new_picking.id
         )
 
-        # Devolver una acción para abrir la nueva transferencia
         return {
             'type': 'ir.actions.act_window',
             'name': _('Transferencia Creada'),
