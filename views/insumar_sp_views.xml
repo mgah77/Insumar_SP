@@ -180,8 +180,7 @@
                         <div class="page">
                             <div class="oe_title">
                                 <h4>
-                                    Solicitud: <span t-field="o.name"/>
-                                    <span style="float:right;">Fecha: <span t-field="o.date"/></span>
+                                    <span t-field="o.name"/>
                                 </h4>
                                 <p><strong>Bodega:</strong> <span t-field="o.warehouse_id"/></p>
                             </div>
