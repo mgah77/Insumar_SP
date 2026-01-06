@@ -1,6 +1,6 @@
-<!-- Insumar_SP/views/insumar_sp_views.xml -->
 <odoo>
     <data>
+        <!-- ... Vista Tree existente (sin cambios) ... -->
         <record id="view_insumar_sp_tree" model="ir.ui.view">
             <field name="name">insumar_sp.tree</field>
             <field name="model">insumar_sp.request</field>
@@ -22,17 +22,29 @@
                 <form string="Solicitud de Pedido">
                     <header>
                         <field name="state" widget="statusbar" statusbar_visible="draft,review,validated,done"/>
+                        
                         <button name="action_send_review" string="Enviar a Revisión" type="object" class="btn-primary"
                                 attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('is_bodega_user', '=', True)]}"/>
                         <button name="action_validate" string="Validar" type="object" class="btn-primary"
                                 attrs="{'invisible': ['|', ('state', '!=', 'review'), ('is_branch_user', '=', True)]}"/>
                         <button name="action_recalculate_stock" string="Actualizar Stock" type="object" class="btn-secondary"
                                 attrs="{'invisible': ['|', '|', ('state', '!=', 'validated'), ('is_bodega_user', '=', True), ('is_branch_user', '=', True)]}"/>
-                        <!-- ATRIBUTO MODIFICADO -->
+                        
+                        <!-- INICIO: NUEVO BOTÓN IMPRIMIR -->
+                        <!-- Este botón llama directamente a la acción del reporte definida abajo -->
+                        <button name="%(Insumar_SP.action_report_insumar_sp_list)d" 
+                                string="Imprimir Lista" 
+                                type="action" 
+                                class="btn-secondary"
+                                attrs="{'invisible': [('state', '!=', 'review')]}"/>
+                        <!-- FIN: NUEVO BOTÓN IMPRIMIR -->
+
                         <button name="action_mark_done" string="Crear transferencia" type="object" class="btn-primary"
                                 attrs="{'invisible': [('can_see_transfer_button', '=', False)]}"/>
                     </header>
+                    
                     <sheet>
+                        <!-- ... Resto de campos del formulario (sin cambios) ... -->
                         <field name="is_branch_user" invisible="1"/>
                         <field name="is_bodega_user" invisible="1"/>
                         <field name="can_see_transfer_button" invisible="1"/>
@@ -76,6 +88,7 @@
             </field>
         </record>
 
+        <!-- ... Vistas del Wizard y Search (sin cambios) ... -->
         <record id="view_insumar_sp_transfer_wizard_form" model="ir.ui.view">
             <field name="name">insumar_sp.transfer.wizard.form</field>
             <field name="model">insumar_sp.transfer.wizard</field>
@@ -137,6 +150,59 @@
 
         <menuitem id="menu_insumar_sp_root" name="Solicitudes de Pedido" parent="stock.menu_stock_root" sequence="10"/>
         <menuitem id="menu_insumar_sp" name="Solicitudes" parent="menu_insumar_sp_root" action="action_insumar_sp" sequence="1"/>
+
+        <!-- ========================================================================== -->
+        <!-- INICIO: DEFINICIÓN DEL REPORTE (NUEVO) -->
+        <!-- ========================================================================== -->
+
+        <!-- Acción del reporte: Es lo que se llama cuando presionas el botón -->
+        <report 
+            id="action_report_insumar_sp_list" 
+            model="insumar_sp.request" 
+            string="Imprimir Lista" 
+            report_type="qweb-pdf" 
+            name="Insumar_SP.report_insumar_sp_list_template" 
+            file="Insumar_SP.report_insumar_sp_list_template"
+            print_report_name="'Lista de Pedido - %s' % (object.name)"
+        />
+
+        <!-- Plantilla QWeb: Define el diseño visual del PDF -->
+        <template id="report_insumar_sp_list_template">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div class="oe_title">
+                        <h2>Lista de Productos Solicitados</h2>
+                        <h3>
+                            Solicitud: <span t-field="o.name"/>
+                            <span style="float:right;">Fecha: <span t-field="o.date"/></span>
+                        </h3>
+                        <p><strong>Bodega:</strong> <span t-field="o.warehouse_id"/></p>
+                    </div>
+
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left; width: 70%;">Producto</th>
+                                <th style="text-align: center; width: 30%;">Cantidad Pedida</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.line_ids" t-as="line">
+                                <td><span t-field="line.product_id"/></td>
+                                <td style="text-align: center;"><span t-field="line.qty_request"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="footer" style="position: absolute; bottom: 0; width: 100%; text-align: center; font-size: 10px;">
+                        <span t-field="res_company.name"/> - Página <span class="page"/> / <span class="topage"/>
+                    </div>
+                </div>
+            </t>
+        </template>
+        
+        <!-- FIN: DEFINICIÓN DEL REPORTE -->
+        <!-- ========================================================================== -->
 
     </data>
 </odoo>
