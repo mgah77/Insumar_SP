@@ -1,16 +1,4 @@
 
-
-El error `KeyError: 'o'` ocurre porque la plantilla QWeb intenta usar una variable llamada `o` (el objeto actual), pero el sistema de reportes de Odoo pasa por defecto la variable `docs`.
-
-Para solucionar esto y además asegurarnos de que el reporte funcione correctamente si seleccionas varios registros (aunque el botón sea para uno solo), debemos estructurar la plantilla para que recorra `docs` y asigne cada registro a la variable `o`.
-
-Aquí tienes el archivo XML completo corregido.
-
-He realizado dos cambios clave en el bloque de la plantilla:
-1.  Agregado `<t t-call="web.html_container">` como envoltorio principal.
-2.  Agregado `<t t-foreach="docs" t-as="o">` para recorrer los registros y definir la variable `o`.
-
-```xml
 <odoo>
     <data>
         <!-- ========================================================================== -->
@@ -225,4 +213,3 @@ He realizado dos cambios clave en el bloque de la plantilla:
 
     </data>
 </odoo>
-```
