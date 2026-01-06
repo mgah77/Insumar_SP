@@ -176,14 +176,14 @@
                 <!-- Recorremos 'docs' (la lista de registros) y lo asignamos a la variable 'o' -->
                 <t t-foreach="docs" t-as="o">
                     <!-- Llamamos al layout estándar de Odoo -->
-                    <t t-call="web.external_layout">
+                    <t t-call="web.internal_layout">
                         <div class="page">
                             <div class="oe_title">
-                                <h2>Lista de Productos Solicitados</h2>
-                                <h3>
+                                <h3>Lista de Productos Solicitados</h3>
+                                <h4>
                                     Solicitud: <span t-field="o.name"/>
                                     <span style="float:right;">Fecha: <span t-field="o.date"/></span>
-                                </h3>
+                                </h4>
                                 <p><strong>Bodega:</strong> <span t-field="o.warehouse_id"/></p>
                             </div>
 
