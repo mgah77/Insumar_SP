@@ -1,6 +1,25 @@
 <odoo>
     <data>
-        <!-- ... Vista Tree existente (sin cambios) ... -->
+        <!-- ========================================================================== -->
+        <!-- INICIO: DEFINICIÓN DEL REPORTE (MOVIDO AL INICIO) -->
+        <!-- ========================================================================== -->
+        
+        <!-- Importante: Definir el reporte ANTES de la vista del formulario, 
+             para que el botón pueda encontrar este ID -->
+        <report 
+            id="action_report_insumar_sp_list" 
+            model="insumar_sp.request" 
+            string="Imprimir Lista" 
+            report_type="qweb-pdf" 
+            name="Insumar_SP.report_insumar_sp_list_template" 
+            file="Insumar_SP.report_insumar_sp_list_template"
+            print_report_name="'Lista de Pedido - %s' % (object.name)"
+        />
+
+        <!-- ========================================================================== -->
+        <!-- VISTAS -->
+        <!-- ========================================================================== -->
+
         <record id="view_insumar_sp_tree" model="ir.ui.view">
             <field name="name">insumar_sp.tree</field>
             <field name="model">insumar_sp.request</field>
@@ -30,21 +49,18 @@
                         <button name="action_recalculate_stock" string="Actualizar Stock" type="object" class="btn-secondary"
                                 attrs="{'invisible': ['|', '|', ('state', '!=', 'validated'), ('is_bodega_user', '=', True), ('is_branch_user', '=', True)]}"/>
                         
-                        <!-- INICIO: NUEVO BOTÓN IMPRIMIR -->
-                        <!-- Este botón llama directamente a la acción del reporte definida abajo -->
+                        <!-- BOTÓN IMPRIMIR: Ahora puede encontrar el ID 'action_report_insumar_sp_list' -->
                         <button name="%(Insumar_SP.action_report_insumar_sp_list)d" 
                                 string="Imprimir Lista" 
                                 type="action" 
                                 class="btn-secondary"
                                 attrs="{'invisible': [('state', '!=', 'review')]}"/>
-                        <!-- FIN: NUEVO BOTÓN IMPRIMIR -->
 
                         <button name="action_mark_done" string="Crear transferencia" type="object" class="btn-primary"
                                 attrs="{'invisible': [('can_see_transfer_button', '=', False)]}"/>
                     </header>
                     
                     <sheet>
-                        <!-- ... Resto de campos del formulario (sin cambios) ... -->
                         <field name="is_branch_user" invisible="1"/>
                         <field name="is_bodega_user" invisible="1"/>
                         <field name="can_see_transfer_button" invisible="1"/>
@@ -88,7 +104,6 @@
             </field>
         </record>
 
-        <!-- ... Vistas del Wizard y Search (sin cambios) ... -->
         <record id="view_insumar_sp_transfer_wizard_form" model="ir.ui.view">
             <field name="name">insumar_sp.transfer.wizard.form</field>
             <field name="model">insumar_sp.transfer.wizard</field>
@@ -151,22 +166,7 @@
         <menuitem id="menu_insumar_sp_root" name="Solicitudes de Pedido" parent="stock.menu_stock_root" sequence="10"/>
         <menuitem id="menu_insumar_sp" name="Solicitudes" parent="menu_insumar_sp_root" action="action_insumar_sp" sequence="1"/>
 
-        <!-- ========================================================================== -->
-        <!-- INICIO: DEFINICIÓN DEL REPORTE (NUEVO) -->
-        <!-- ========================================================================== -->
-
-        <!-- Acción del reporte: Es lo que se llama cuando presionas el botón -->
-        <report 
-            id="action_report_insumar_sp_list" 
-            model="insumar_sp.request" 
-            string="Imprimir Lista" 
-            report_type="qweb-pdf" 
-            name="Insumar_SP.report_insumar_sp_list_template" 
-            file="Insumar_SP.report_insumar_sp_list_template"
-            print_report_name="'Lista de Pedido - %s' % (object.name)"
-        />
-
-        <!-- Plantilla QWeb: Define el diseño visual del PDF -->
+        <!-- Plantilla QWeb -->
         <template id="report_insumar_sp_list_template">
             <t t-call="web.external_layout">
                 <div class="page">
@@ -200,9 +200,6 @@
                 </div>
             </t>
         </template>
-        
-        <!-- FIN: DEFINICIÓN DEL REPORTE -->
-        <!-- ========================================================================== -->
 
     </data>
 </odoo>
