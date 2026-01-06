@@ -177,7 +177,7 @@
                 <t t-foreach="docs" t-as="o">
                     <!-- Llamamos al layout estándar de Odoo -->
                     <t t-call="web.basic_layout">
-                        <div class="page" style="padding: -50;">
+                        <div class="page" style="margin: -60;">
                             <div class="oe_title">
                                 <h3>Lista de Productos Solicitados</h3>
                                 <h4>
