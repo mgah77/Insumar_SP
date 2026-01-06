@@ -1,3 +1,16 @@
+
+
+El error `KeyError: 'o'` ocurre porque la plantilla QWeb intenta usar una variable llamada `o` (el objeto actual), pero el sistema de reportes de Odoo pasa por defecto la variable `docs`.
+
+Para solucionar esto y además asegurarnos de que el reporte funcione correctamente si seleccionas varios registros (aunque el botón sea para uno solo), debemos estructurar la plantilla para que recorra `docs` y asigne cada registro a la variable `o`.
+
+Aquí tienes el archivo XML completo corregido.
+
+He realizado dos cambios clave en el bloque de la plantilla:
+1.  Agregado `<t t-call="web.html_container">` como envoltorio principal.
+2.  Agregado `<t t-foreach="docs" t-as="o">` para recorrer los registros y definir la variable `o`.
+
+```xml
 <odoo>
     <data>
         <!-- ========================================================================== -->
@@ -49,7 +62,7 @@
                         <button name="action_recalculate_stock" string="Actualizar Stock" type="object" class="btn-secondary"
                                 attrs="{'invisible': ['|', '|', ('state', '!=', 'validated'), ('is_bodega_user', '=', True), ('is_branch_user', '=', True)]}"/>
                         
-                        <!-- BOTÓN IMPRIMIR: Ahora puede encontrar el ID 'action_report_insumar_sp_list' -->
+                        <!-- BOTÓN IMPRIMIR -->
                         <button name="%(Insumar_SP.action_report_insumar_sp_list)d" 
                                 string="Imprimir Lista" 
                                 type="action" 
@@ -166,40 +179,50 @@
         <menuitem id="menu_insumar_sp_root" name="Solicitudes de Pedido" parent="stock.menu_stock_root" sequence="10"/>
         <menuitem id="menu_insumar_sp" name="Solicitudes" parent="menu_insumar_sp_root" action="action_insumar_sp" sequence="1"/>
 
-        <!-- Plantilla QWeb -->
+        <!-- ========================================================================== -->
+        <!-- PLANTILLA QWEB CORREGIDA -->
+        <!-- ========================================================================== -->
         <template id="report_insumar_sp_list_template">
-            <t t-call="web.external_layout">
-                <div class="page">
-                    <div class="oe_title">
-                        <h2>Lista de Productos Solicitados</h2>
-                        <h3>
-                            Solicitud: <span t-field="o.name"/>
-                            <span style="float:right;">Fecha: <span t-field="o.date"/></span>
-                        </h3>
-                        <p><strong>Bodega:</strong> <span t-field="o.warehouse_id"/></p>
-                    </div>
+            <!-- web.html_container permite generar múltiples páginas si es necesario -->
+            <t t-call="web.html_container">
+                <!-- Recorremos 'docs' (la lista de registros) y lo asignamos a la variable 'o' -->
+                <t t-foreach="docs" t-as="o">
+                    <!-- Llamamos al layout estándar de Odoo -->
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div class="oe_title">
+                                <h2>Lista de Productos Solicitados</h2>
+                                <h3>
+                                    Solicitud: <span t-field="o.name"/>
+                                    <span style="float:right;">Fecha: <span t-field="o.date"/></span>
+                                </h3>
+                                <p><strong>Bodega:</strong> <span t-field="o.warehouse_id"/></p>
+                            </div>
 
-                    <table class="table table-condensed">
-                        <thead>
-                            <tr>
-                                <th style="text-align: left; width: 70%;">Producto</th>
-                                <th style="text-align: center; width: 30%;">Cantidad Pedida</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr t-foreach="o.line_ids" t-as="line">
-                                <td><span t-field="line.product_id"/></td>
-                                <td style="text-align: center;"><span t-field="line.qty_request"/></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    
-                    <div class="footer" style="position: absolute; bottom: 0; width: 100%; text-align: center; font-size: 10px;">
-                        <span t-field="res_company.name"/> - Página <span class="page"/> / <span class="topage"/>
-                    </div>
-                </div>
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left; width: 70%;">Producto</th>
+                                        <th style="text-align: center; width: 30%;">Cantidad Pedida</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.line_ids" t-as="line">
+                                        <td><span t-field="line.product_id"/></td>
+                                        <td style="text-align: center;"><span t-field="line.qty_request"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <div class="footer" style="position: absolute; bottom: 0; width: 100%; text-align: center; font-size: 10px;">
+                                <span t-field="res_company.name"/> - Página <span class="page"/> / <span class="topage"/>
+                            </div>
+                        </div>
+                    </t>
+                </t>
             </t>
         </template>
 
     </data>
 </odoo>
+```
