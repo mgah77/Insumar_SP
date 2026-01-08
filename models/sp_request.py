@@ -70,8 +70,9 @@ class SpRequest(models.Model):
     def write(self, vals):
         if self.env.user.property_warehouse_id:
             for record in self:
-                if record.state != 'draft':
-                    raise UserError(_("Solo puedes editar una Solicitud de Pedido en estado Borrador."))
+                # CAMBIO: Ahora permite editar en 'draft' y también en 'review'
+                if record.state not in ['draft', 'review']:
+                    raise UserError(_("Solo puedes editar una Solicitud de Pedido en estado Borrador o Revisión."))
         return super().write(vals)
 
     def unlink(self):
