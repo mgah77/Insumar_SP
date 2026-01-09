@@ -196,12 +196,14 @@
                                     <tr>
                                         <th style="text-align: left; width: 70%;">Producto</th>
                                         <th style="text-align: center; width: 30%;">Cantidad Pedida</th>
+                                        <th style="text-align: center; width: 30%;">Cantidad a Entregar</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr t-foreach="o.line_ids" t-as="line">
                                         <td><span t-field="line.product_id"/></td>
                                         <td style="text-align: center;"><span t-field="line.qty_request"/></td>
+                                        <td style="text-align: center;"><span t-field="line.move_qty"/></td>
                                     </tr>
                                 </tbody>
                             </table>
