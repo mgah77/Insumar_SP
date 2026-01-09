@@ -55,7 +55,7 @@
                                 string="Imprimir Lista" 
                                 type="action" 
                                 class="btn-secondary"
-                                attrs="{'invisible': [('state', '!=', 'review')]}"/>
+                                attrs="{'invisible': [('state', 'not in', ['review', 'validated'])]}"/>
 
                         <button name="action_mark_done" string="Crear transferencia" type="object" class="btn-primary"
                                 attrs="{'invisible': [('can_see_transfer_button', '=', False)]}"/>
