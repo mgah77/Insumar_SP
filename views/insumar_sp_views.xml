@@ -81,13 +81,13 @@
                                 <field name="line_ids">
                                     <tree string="Líneas de Producto" editable="bottom" decoration-danger="show_red_alert">
                                         <field name="product_id" 
-                                            attrs="{'readonly': [('parent.state', 'not in', ['draft', 'review'])]}" 
+                                            attrs="{'readonly': [('parent.state', 'not in', ['draft', 'review', 'validated'])]}" 
                                             domain="[('sale_ok', '=', True), ('detailed_type', '=', 'product')]" 
                                             options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
                                         
                                         <!-- Nota: Probablemente también quieras editar la cantidad en revisión -->
                                         <field name="qty_request" 
-                                            attrs="{'readonly': [('parent.state', 'not in', ['draft', 'review'])]}"/>
+                                            attrs="{'readonly': [('parent.state', 'not in', ['draft', 'review', 'validated'])]}"/>
                                         <field name="stock_branch" readonly="1"/>
                                         <field name="stock_central" readonly="1" 
                                                attrs="{'invisible': [('can_see_stock_central', '=', False)]}"/>
