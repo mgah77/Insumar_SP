@@ -38,8 +38,7 @@ class SpRequest(models.Model):
     def _compute_can_see_transfer_button(self):
         for record in self:
             record.can_see_transfer_button = (
-                record.state == 'validated' and
-                not record.is_branch_user and
+                record.state == 'validated' and                
                 not record.is_bodega_user
             )
 
