@@ -170,20 +170,30 @@ class SpRequest(models.Model):
         move_vals_list = []
         for line in self.line_ids:
             if line.move_qty > 0:
+                product = line.product_id
+                precio_unitario = product.lst_price
+                subtotal = precio_unitario * line.move_qty
+                taxes = product.taxes_id 
+
                 move_vals_list.append((0, 0, {
-                    'name': line.product_id.name, # CAMBIO: Nombre del producto
+                    'name': product.name,
                     'origin': self.name,
-                    'product_id': line.product_id.id,
+                    'product_id': product.id,
                     'product_uom_qty': line.move_qty,
-                    'product_uom': line.product_id.uom_id.id,
+                    'product_uom': product.uom_id.id,
                     'location_id': central_wh.lot_stock_id.id,
                     'location_dest_id': dest_wh.lot_stock_id.id,
                     'state': 'draft',
                     'picking_id': new_picking.id,
                     'partner_id': self.env.company.partner_id.id,
-                    'description_picking': line.product_id.description_picking or line.product_id.name,
-                    'price_unit': line.product_id.standard_price,
-                    'discount': 0.0,                    
+                    
+                    # CAMPOS AGREGADOS
+                    'description_picking': product.description_picking or product.name,
+                    'precio_unitario': precio_unitario,
+                    'subtotal': subtotal,
+                    'discount': 0.0,
+                    'move_line_tax_ids': [(6, 0, taxes.ids)],
+                    'quantity_done': line.move_qty, # CAMPO AGREGADO
                 }))
         
         new_picking.move_ids = move_vals_list
