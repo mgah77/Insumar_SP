@@ -163,6 +163,7 @@ class SpRequest(models.Model):
             'partner_id': self.env.company.partner_id.id, # Partner de la compañía
             'state': 'draft',
             'scheduled_date': fields.Datetime.now(),
+            'inmediate_transfer' : True,
         }
         new_picking = self.env['stock.picking'].create(picking_vals)
 
@@ -170,7 +171,7 @@ class SpRequest(models.Model):
         for line in self.line_ids:
             if line.move_qty > 0:
                 move_vals_list.append((0, 0, {
-                    'name': self.name,
+                    'name': line.product_id.name, # CAMBIO: Nombre del producto
                     'origin': self.name,
                     'product_id': line.product_id.id,
                     'product_uom_qty': line.move_qty,
@@ -179,6 +180,11 @@ class SpRequest(models.Model):
                     'location_dest_id': dest_wh.lot_stock_id.id,
                     'state': 'draft',
                     'picking_id': new_picking.id,
+                    'partner_id': self.env.company.partner_id.id,
+                    'description_picking': line.product_id.description_picking or line.product_id.name,
+                    'price_unit': line.product_id.standard_price,
+                    'discount': 0.0,
+                    'tax_ids': [(6, 0, taxes.ids)],
                 }))
         
         new_picking.move_ids = move_vals_list
