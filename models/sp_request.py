@@ -163,7 +163,7 @@ class SpRequest(models.Model):
             'partner_id': self.env.company.partner_id.id, # Partner de la compañía
             'state': 'draft',
             'scheduled_date': fields.Datetime.now(),
-            'inmediate_transfer' : True,
+            'immediate_transfer' : True,
         }
         new_picking = self.env['stock.picking'].create(picking_vals)
 
