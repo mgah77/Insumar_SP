@@ -183,8 +183,7 @@ class SpRequest(models.Model):
                     'partner_id': self.env.company.partner_id.id,
                     'description_picking': line.product_id.description_picking or line.product_id.name,
                     'price_unit': line.product_id.standard_price,
-                    'discount': 0.0,
-                    'tax_ids': [(6, 0, taxes.ids)],
+                    'discount': 0.0,                    
                 }))
         
         new_picking.move_ids = move_vals_list
